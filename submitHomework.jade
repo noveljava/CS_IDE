@@ -1,0 +1,91 @@
+﻿!!!
+html
+    head
+        meta(charset='utf-8')
+        title helloWorld
+        script(src = 'jquery-1.9.1.js')
+        script.
+            var tabCnt = 0;
+            var tabBool = 1;
+            $(document).ready(function(){
+                 $(".codepad").keydown(function (event) {
+                    var who = (event) ? event.target : event.srcElement;
+                    e = event.which;
+                    
+                    var sPos = who.selectionStart;
+                    var ePos = who.selectionEnd;
+                    var str = "";
+
+                    var code = $('.codepad').val();
+                    var codeStart = code.substring(0, sPos);
+                    var codeEnd = code.substring(ePos);
+                    
+                    if (e == 9) {
+                        // tab 누르기 직전 바로 앞 문자가 tab이고, 첫글자가 공백이면 cnt++
+                        event.preventDefault();
+                        str = "\t";
+                        if (tabBool == 1)
+                            tabCnt++;
+
+                        var code = codeStart + str + codeEnd;
+                        $('.codepad').val(code);
+                        who.selectionStart = who.selectionEnd = sPos + str.length;
+
+                    } else if (e == 13) {
+                        //줄 바꿈 시 enter 수 조정 필요.
+                        //var code = $(".codepad").val() + "\n";
+                        str = "\n"
+                        for (var i = 0; i < tabCnt; i++)
+                          str += "\t";
+
+                        var code = codeStart + str + codeEnd;
+                        $('.codepad').val(code);
+                        who.selectionStart = who.selectionEnd = sPos + str.length;
+
+                        tabBool = 1;
+                        event.preventDefault();
+                    } else if (e == 8) {
+                        if (tabBool == 1)
+                            tabCnt = tabCnt - 1 > 0 ? tabCnt-1 : 0;
+                    } else {
+                        tabBool = 0;
+                    }
+                });
+            });
+
+            function submit(){
+                var params = 'questionNum=' + #{questionData[0].questionNum};
+                var code = $('#userCode').val();
+                code = code.replace(/&/gi, "%26");
+                params += '&code=' + code;
+                
+                if($('#userCode').val().length == 0){
+                    alert('코드 입력이 필요합니다.');
+                    return ;
+                }
+
+                $.ajax({
+                    type: "post",
+                    url: "/submitHomeworkCompile",
+                    data: params,
+                    success: function (e) {
+                        location.href= "/homework";
+                    }
+                });
+            }
+
+            function cancle(){
+                location.href='/homework';
+            }
+    body
+        #titleDiv
+            p 제목 : #{questionData[0].title}
+
+            #containerDiv
+                p #{questionData[0].question}
+
+                <textarea class='codepad' id="userCode" style="width:800px; height: 200px;"></textarea>
+
+                #footer
+                    button(onclick='submit()') 제출
+                    button(onclick='cancle()') 취소

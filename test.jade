@@ -1,0 +1,55 @@
+﻿!!!
+html
+	head
+		meta(charset='utf-8')
+		title Index Page
+		link(rel='stylesheet', href='question.css')
+
+		script(src = 'jquery-1.9.1.js')
+		script.
+			$(document).ready(function () {
+				var id = #{id};
+			});
+
+			function writeQuestion(){
+				location.href='/write.html';
+			}
+
+			
+	body
+		- if( auth == 9)
+			button(onClick='writeQuestion();') 문제제출
+
+		table.questionBoard
+			thead
+				tr
+					td.num 번호
+					td.title 제목
+					td.deadLine 제출일
+					td.result 결과
+			tbody
+				- for(var i=0; i<questionData.length; i++){
+					tr
+						td.textCenter #{questionData[i].questionNum}
+						td <a href="/submitHomework?questionNum=#{i+1}"> #{questionData[i].title} </a>
+					
+						- var deadline = new Date(questionData[i].deadLine).toDateString()
+						- var testDate = new Date(questionData[i].deadLine)
+						- var day = testDate.getMonth()+1
+
+						- if(day.length == 1)
+						-	day = '0' + day
+						- if( deadline == 'Invalid Date')
+							td.textCenter Not Date
+						- else
+							td.textCenter #{deadline.substr(10,5)}-#{day}-#{deadline.substr(8,2)}
+
+						- var haveResult = false
+						- for(var j=0; j<homeworkData.length; j++)
+							- if( homeworkData[j].questionNum == questionData[i].questionNum){
+								td.textCenter #{homeworkData[j].result} / #{questionData[i].resultNum}
+							- haveResult = true }
+
+						- if(!haveResult)
+							td.textCenter 미제출
+				-}

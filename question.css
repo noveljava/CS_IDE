@@ -1,0 +1,56 @@
+﻿table {
+    border-collapse: collapse;
+    font:normal 12px Gulim, "굴림", sans-serif;
+    margin: 0;padding: 0;
+}
+
+th, td {
+    border-bottom: 1px solid #666;
+    border-top: 1px solid #666;
+    padding: 0.6em;
+    vertical-align: 4px;
+}
+
+thead th,thead td, tfoot th, tfoot td {
+    background-color: #cc9;
+    font-size: 1.1em;
+    vertical-align:middle;
+}
+
+thead td {
+    text-align:center;
+    background:#f0f8ff;
+}
+
+thead .num {
+    width: 50px;
+}
+
+thead .title {
+    width: 200px;
+}
+
+thead .deadLine {
+    width: 100px;
+}
+
+thead .result {
+    width: 100px;
+}
+thead th, thead td {
+    border-top:black solid 3px;
+}
+
+tbody td {
+    background:white;
+}
+
+tbody .textCenter {
+    text-align: center;
+}
+
+/*마우스 온오버*/
+tbody th, td        { background-color:#FFF;}
+tbody tr:hover td, tbody tr:hover th {background-color: #EEE;}
+
+

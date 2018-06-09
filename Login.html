@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Login Page</title>
+    <script type="text/javascript">
+        function test() {
+            var params;
+            params = 'id=2007011126';
+            location.href = '/login?' + params;
+        }
+    </script>
+</head>
+<body>
+    <h1>Login Page</h1>
+    <hr />
+        <table>
+            <tr>
+                <td><label>ID</label></td>
+                <td><input type="text" name="id" /></td>
+            </tr>
+            <tr>
+                <td><label>Password</label></td>
+                <td><input type="password" name="password" /></td>
+            </tr>
+        </table>
+        <button onclick="test()">로그인</button>
+</body>
+</html>

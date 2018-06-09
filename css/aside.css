@@ -1,0 +1,10 @@
+.selectedLi{
+	background-color: #aaaaaa;
+	font-color: white;
+}
+
+
+a:link{ text-decoration:none; color:black;}
+a:visited{text-decoration:none;color:black;}
+a:hover{text-decoration:none;color:#c00;}
+a:active{text-decoration:none;color:#c00;}

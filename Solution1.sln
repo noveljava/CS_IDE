@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8F0D7673-A5FC-47C6-9780-F81D084034D4}"
+	ProjectSection(SolutionItems) = preProject
+		code.html = code.html
+		fileTest.txt = fileTest.txt
+		homework.ejs = homework.ejs
+		layout.html = layout.html
+		Login.html = Login.html
+		projectList.html = projectList.html
+		Server.js = Server.js
+		session.js = session.js
+		sourceParser.html = sourceParser.html
+		submitHomework.jade = submitHomework.jade
+		tabs.html = tabs.html
+		test.c = test.c
+		test.jade = test.jade
+		testJavascript.html = testJavascript.html
+		testTabs.html = testTabs.html
+		write.html = write.html
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,279 @@
+﻿<!DOCTYPE html>
+
+<html lang="en"->
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="contextmenu.css" rel="stylesheet" type="text/css" />
+    <link href="jquery-ui-1.10.3.custom.css" rel="stylesheet" type="text/css" />
+    <link href="aside.css" rel="stylesheet" type="text/css" />
+    <style>
+        #dialog label, #dialog input { display:block; }
+        #dialog label { margin-top: 0.5em; }
+        #dialog input, #dialog textarea { width: 95%; }
+        #tabs { margin-top: 1em; }
+        #tabs li .ui-icon-close { float: left; margin: 0.4em 0.2em 0 0; cursor: pointer; }
+        #add_tab { cursor: pointer; }
+        
+        input.text { margin-bottom:12px; width:95%; padding: .4em; }
+        fieldset { padding:0; border:0; margin-top:25px; }
+        h1 { font-size: 1.2em; margin: .6em 0; }
+        div#users-contain { width: 350px; margin: 20px 0; }
+        div#users-contain table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+        div#users-contain table td, div#users-contain table th { border: 1px solid #eee; padding: .6em 10px; text-align: left; }
+        .ui-dialog .ui-state-error { padding: .3em; }
+        .validateTips { border: 1px solid transparent; padding: 0.3em; }
+    </style>
+    <script type="text/javascript" src="jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="jquery.contextmenu.js"></script>
+    <script type="text/javascript" src="jquery-ui-1.10.3.custom.js"></script>
+    
+    <script type="text/javascript">
+        var urSource;
+        var addTabs;
+        var selectedIndex;
+        var nextIdx;                // 탭을 추가했을 시에 문제가 생김. 
+        var sessionId;
+        $(document).ready(function () {
+            nextIdx = 0;
+            var params = 'id=' + sessionId;
+
+            $.ajax({
+                type: "get",
+                url: "/getList",
+                data: params,
+                dataType: 'json',
+                success: function (result) {
+                    $.each(result, function (index, value) {
+                        urSource = result;
+                        $('#ul1').append("<li id=li-" + index + "><a href='#' onclick='getCode(" + index + ")'>" + result[index].sourceName + "</a></li>");
+                        nextIdx++;
+                    });
+                }
+            });
+            
+            contextMenu();
+        });
+
+        function compile(index, sourceName) {
+            var codepad = '#codepad-' + index;
+            var params = 'code=' + $(codepad).val()
+            urSource[selectedIndex].sourceName = codepad;
+
+            params = params.replace("&", "%26");
+            params = params + '&sourceName=' + sourceName;
+            params = params + '&_id=' + urSource[selectedIndex]._id;
+            alert(params);
+            $.ajax({
+                type: "post",
+                url: "/compile",
+                data: params,
+                success: function (e) {
+                    alert(e);
+                }
+            });
+        }
+
+        function contextMenu() {
+            var option = {
+                width: 150, items: [
+                    { text: "추가", icon: "images/add.png", alias: "add", action: menuAction },
+                    { text: "삭제", icon: "images/delete.png", alias: "delete", action: menuAction },
+                ]
+            };
+            function menuAction() {
+                if (this.data.alias == 'delete') {
+                    var params = 'type=delete&_id=' + urSource[selectedIndex]._id;
+                    $.ajax({
+                        type: "POST",
+                        url: "/listAjax",
+                        data: params,
+                        success: function (e) {
+                            if (e == 'true') {
+                                $('#li-' + selectedIndex).remove();
+                                var panelId;
+                                $("#tabs > ul > li").each(function (localIdx) {
+                                    var sourceName = $(this).text().replace(" Remove Tab", "");
+
+                                    if (urSource[selectedIndex].sourceName == sourceName) {
+                                        panelId = $('#tabs ul > li').eq(localIdx).remove().attr("aria-controls");
+                                    }
+                                });
+                                $("#" + panelId).remove();
+                                tabs.tabs("refresh");
+                            }
+                        }
+                    });
+                } else {
+                    $("#dialog-form").dialog("open");
+                }
+            }
+
+            $("#list").contextmenu(option);
+        };
+
+        function getCode(index) {
+            var flag = true;
+            if (selectedIndex != null) {
+                var id = '#li-' + selectedIndex;
+                $(id).removeClass('selectedLi');
+            }
+
+            selectedIndex = index;
+            var selected = '#li-' + index;
+            $(selected).addClass('selectedLi');
+            
+            $("#tabs > ul > li").each(function (localIdx) {
+                var sourceName = $(this).text().replace(" Remove Tab", "");
+                
+                if (urSource[index].sourceName == sourceName) {
+                    flag = false;
+                    var link = $(this).attr('aria-controls');
+                    $("[href='#" + link + "']").trigger("click");
+                }
+            });
+
+            if(flag == true)
+                addTabs(urSource[index].sourceName, urSource[index].code);
+        }
+
+        $(function () {
+            var name = $("#name");
+            allFields = $([]).add(name), tips = $( ".validateTips" );
+
+            function updateTips(t) {
+                tips
+                  .text(t)
+                  .addClass("ui-state-highlight");
+                setTimeout(function () {
+                    tips.removeClass("ui-state-highlight", 1500);
+                }, 500);
+            }
+
+            function checkLength(o, n, min, max) {
+                if (o.val().length > max || o.val().length < min) {
+                    o.addClass("ui-state-error");
+                    updateTips( n + "은 " + min + " 에서 " + max + "글자로 해주십시오.");
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            $("#dialog-form").dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "생성": function () {
+                        var bValid = true;
+                        allFields.removeClass("ui-state-error");
+
+                        bValid = bValid && checkLength(name, "이름", 1, 16);
+                        if (bValid) {
+                            $('#ul1').append("<li id=li-" + nextIdx + "><a href='#' onclick='getCode(" + nextIdx + ")'>" + name.val() + "</a></li>");
+                            var params = 'type=insert&sourceName=' + name.val();
+                            var sourceName = name.val()
+                            $.ajax({
+                                type: "POST",
+                                url: "/listAjax",
+                                data: params,
+                                success: function (e) {
+                                    var _id = e.substring(5, e.length)
+                                    e = e.substring(0, 4);
+                                    if (e == 'true') {
+                                        var newSource = {
+                                            'sourceName': sourceName,
+                                            'code': "",
+                                            '_id': _id
+                                        };
+                                        urSource.push(newSource);
+                                        addTabs(urSource[nextIdx].sourceName, "");
+
+                                        nextIdx++;
+                                    }
+                                }
+                            });
+                            $(this).dialog("close");
+                        }
+                    },
+                    "취소": function () {
+                        $(this).dialog("close");
+                    }
+                },
+                close: function () {
+                    allFields.val("").removeClass("ui-state-error");
+                }
+            });
+        });
+
+        $(function () {
+            var tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close' role='presentation'>Remove Tab</span></li>",
+            tabCounter = 1;
+
+            var tabs = $("#tabs").tabs();
+
+            // actual addTab function: adds new tab using the input from the form above
+            addTabs = function addTab(title, content) {
+                var params = tabCounter + ",\'" + title + "\'";
+                var label = title || "Tab " + tabCounter,
+                id = "tabs-" + tabCounter,
+                li = $(tabTemplate.replace(/#\{href\}/g, "#" + id).replace(/#\{label\}/g, label)),
+                tabContentHtml = content || "";
+
+                tabs.find(".ui-tabs-nav").append(li);
+                tabs.append("<div id='" + id + "'><textarea id='codepad-" + tabCounter + "' cols='100' rows='20'>" + tabContentHtml + "</textarea><button onClick=\"compile(" + params + ")\">컴파일</button></div>");
+                tabs.tabs("refresh");
+                $("[href='#tabs-" + tabCounter + "']").trigger("click");
+                tabCounter++;
+            }
+
+            // close icon: removing the tab on click
+            tabs.delegate("span.ui-icon-close", "click", function () {
+                var panelId = $(this).closest("li").remove().attr("aria-controls");
+                $("#" + panelId).remove();
+                tabs.tabs("refresh");
+            });
+
+            tabs.bind("keyup", function (event) {
+                if (event.altKey && event.keyCode === $.ui.keyCode.BACKSPACE) {
+                    var panelId = tabs.find(".ui-tabs-active").remove().attr("aria-controls");
+                    $("#" + panelId).remove();
+                    tabs.tabs("refresh");
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <!-- If you create new Source, program don't find _Id.
+After new Data be inserted in DataBase, program finds _id of new Data then  then the server will return it
+
+        -->
+    <aside style="width:20%; height:100px; float: left;" id="list">
+        <div id="target"  class="target">
+            <ul id="ul1"></ul>
+        </div>
+    </aside>
+    <section id="code">
+        <!--<textarea cols="100" rows="20" id="codepad" name="user[codepad]" onfocus="inTextarea=true;" onblur="inTextarea=false;"></textarea>-->
+        <div style="width:79%; float:right;">
+            <div id="tabs">
+                <ul>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <div id="dialog-form" title="Create new Source">
+       <p class="validateTips">Textfields are required.</p>
+      <form id="dialog">
+          <fieldset>
+            <label for="name">Source Name</label>
+            <input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all" />
+          </fieldset>
+      </form>
+    </div>
+</body>
+</html>

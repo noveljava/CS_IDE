@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script type="text/javascript" src="query"></script>
+    <link rel="stylesheet" href="css" />
+    <script type="text/javascript">
+        var tabCnt = 0;
+        var tabBool = 1;
+
+        $(document).ready(function () {
+            var preKey = 0;
+            $(document).keydown(function (event) {
+                var who = (event) ? event.target : event.srcElement;
+                e = event.which;
+                
+                if (preKey == 17 && e == 83) {
+                    alert('save');
+                }
+
+                preKey = e;
+            });
+
+            $("#codepad").keydown(function (event) {
+                var who = (event) ? event.target : event.srcElement;
+                e = event.which;
+
+                var sPos = who.selectionStart;
+                var ePos = who.selectionEnd;
+                var str = "";
+
+                var code = $('#codepad').val();
+                var codeStart = code.substring(0, sPos);
+                var codeEnd = code.substring(ePos);
+
+                if (e == 9) {
+                    // tab 누르기 직전 바로 앞 문자가 tab이고, 첫글자가 공백이면 cnt++
+                    event.preventDefault();
+                    str = "\t";
+                    if (tabBool == 1)
+                        tabCnt++;
+
+                    var code = codeStart + str + codeEnd;
+                    $('#codepad').val(code);
+                    who.selectionStart = who.selectionEnd = sPos + str.length;
+
+                } else if (e == 13) {
+                    //줄 바꿈 시 enter 수 조정 필요.
+                    //var code = $("#codepad").val() + "\n";
+                    str = "\n"
+                    for (var i = 0; i < tabCnt; i++)
+                        str += "\t";
+
+                    var code = codeStart + str + codeEnd;
+                    $('#codepad').val(code);
+                    who.selectionStart = who.selectionEnd = sPos + str.length;
+
+                    tabBool = 1;
+                    event.preventDefault();
+                } else if (e == 8) {
+                    if (tabBool == 1)
+                        tabCnt = tabCnt - 1 > 0 ? tabCnt-1 : 0;
+                } else {
+                    tabBool = 0;
+                }
+            });
+        });
+
+        function ajax(){
+            var params = 'code='+$('#codepad').val();
+            params = params.replace("&", "%26");
+            params += "&name=" + $('#sourceName').val();
+            $.ajax({
+                type: "POST",
+                url: "/compile",
+                data: params,
+                dataType: 'json',
+                success: function (e) {
+                   alert(e);
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <input type="text" id="sourceName"/><br />
+    <textarea cols="100" rows="20" id="codepad" name="user[codepad]" onfocus="inTextarea=true;" onblur="inTextarea=false;"></textarea>
+    <button onclick="ajax()">컴파일</button>
+    <button onclick="ajax()">저장</button>
+</body>
+</html>

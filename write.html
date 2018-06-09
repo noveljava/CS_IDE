@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script type="text/javascript" src="jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="jquery-ui-1.10.3.custom.js"></script>
+    <link href="jquery-ui-1.10.3.custom.css" rel="stylesheet" type="text/css" />
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#deadLine').datepicker({ minDate: 0, maxDate: "+20D" });
+        });
+
+        function check(o, errMsg) {
+            if (o.val().length == 0) {
+                alert(errMsg + ' 입력이 필요합니다.');
+                return -1;
+            }
+        }
+        function writeQuestion() {
+            var params;
+            if (check($('#title'), '제목') == -1)
+                return;
+            
+            params = 'title=' + $('#title').val();
+            if (check($('#deadLine'), '마감일') == -1)
+                return;
+
+            params += '&deadLine=' + $('#deadLine').val();
+            if (check($('#question'), '문제') == -1)
+                return;
+
+            params += '&question=' + $('#question').val();
+            if (check($('#input'), '예제') == -1)
+                return;
+
+            params += '&input=' + $('#input').val();
+            var inputNum = $('#input').val().split("\n");
+            if (check($('#answer'), '답안') == -1)
+                return;
+
+            params += '&answer=' + $('#answer').val();
+            var answerNum = $('#answer').val().split("\n");
+
+            if (inputNum.length != answerNum.length) {
+                alert('예제 입력수와 예제 답안수를 동일하게 해주세요')
+                return;
+            }
+
+            params += "&resultNum=" + answerNum.length;
+            alert(params);
+            $.ajax({
+                type: "post",
+                url: "/inputQuestion",
+                data: params,
+                success: function () {
+                    
+                }
+            });
+        }
+
+        function cancle() {
+            location.href = '/homework';
+        }
+    </script>
+</head>
+<body>
+    <div style="width: 800px; margin: 30px 50px 10px">
+        <div style="margin-bottom: 10px;">
+            <label>제목 : </label>
+            <input id='title' type="text" style="width: 330px; margin-right: 100px;"/>
+            <label>마감일 :</label>
+            <input id='deadLine' type="text" />
+        </div>
+
+        <div>
+            <textarea id='question' style="width: 800px; height: 500px;"></textarea>
+        </div>
+        <div style="margin: 20px 10px;">
+            <label style="margin-right: 400px;">Input Date</label>
+            <label>Result</label>
+        </div>
+        <div>
+            <textarea id='input' style="width: 300px; margin-right: 170px;"></textarea>
+            <textarea id='answer' style="width: 310px;"></textarea>
+        </div>
+
+        <div style="float:right;">
+            <button style="margin-top: 20px;" onclick="writeQuestion();">작성</button>
+            <button style="margin-top: 20px;" onclick="cancle();">취소</button>
+        </div>
+    </div>
+</body>
+</html>
